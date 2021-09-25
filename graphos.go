@@ -2,10 +2,20 @@ package graphos
 
 import "math"
 
-func Distance(x1, y1, x2, y2 int) int {
-	first := math.Pow(float64(x2-x1), 2)
-	second := math.Pow(float64(y2-y1), 2)
+func Distance(x0, y0, x1, y1 int) int {
+	first := math.Pow(float64(x1-x0), 2)
+	second := math.Pow(float64(y1-y0), 2)
 	return int(math.Sqrt(first + second))
+}
+
+func DistanceManhattan(x0, y0, x1, y1 int) int {
+	if x1 < x0 {
+		x1, x0 = x0, x1
+	}
+	if y1 < y0 {
+		y1, y0 = y0, y1
+	}
+	return (x1 - x0) + (y1 - y0)
 }
 
 func abs(i int) int {
@@ -18,33 +28,29 @@ func abs(i int) int {
 func (p *Instance) DrawLine(x0, y0, x1, y1 int) {
 	dx := abs(x1 - x0)
 	dy := abs(y1 - y0)
-	var sx, sy int
+	sx := -1
 	if x0 < x1 {
 		sx = 1
-	} else {
-		sx = -1
 	}
+	sy := -1
 	if y0 < y1 {
 		sy = 1
-	} else {
-		sy = -1
 	}
-	err := dx - dy
+	e := dx - dy
 
-	var e2 int
 	for {
 		p.DrawPix(x0, y0)
 
 		if x0 == x1 && y0 == y1 {
 			return
 		}
-		e2 = 2 * err
+		e2 := 2 * e
 		if e2 > -dy {
-			err = err - dy
+			e = e - dy
 			x0 = x0 + sx
 		}
 		if e2 < dx {
-			err = err + dx
+			e = e + dx
 			y0 = y0 + sy
 		}
 	}

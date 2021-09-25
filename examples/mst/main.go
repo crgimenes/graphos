@@ -75,7 +75,7 @@ func update(screen *graphos.Instance) error {
 				r1 := dotReached[r]
 				u1 := dotUnreached[u]
 
-				d := graphos.Distance(r1.X, r1.Y, u1.X, u1.Y)
+				d := graphos.DistanceManhattan(r1.X, r1.Y, u1.X, u1.Y)
 				if d < record {
 					record = d
 					uIndex = u
