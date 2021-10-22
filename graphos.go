@@ -18,33 +18,31 @@ func DistanceManhattan(x0, y0, x1, y1 int) int {
 	return (x1 - x0) + (y1 - y0)
 }
 
-func abs(i int) int {
-	if i < 0 {
-		return -i
-	}
-	return i
+func abs(n int64) int64 {
+	y := n >> 63
+	return (n ^ y) - y
 }
 
-func (p *Instance) DrawLine(x0, y0, x1, y1 int) {
+func (p *Instance) DrawLine(x0, y0, x1, y1 int64) {
 	dx := abs(x1 - x0)
 	dy := abs(y1 - y0)
-	sx := -1
+	sx := int64(-1)
 	if x0 < x1 {
 		sx = 1
 	}
-	sy := -1
+	sy := int64(-1)
 	if y0 < y1 {
 		sy = 1
 	}
 	e := dx - dy
 
 	for {
-		p.DrawPix(x0, y0)
+		p.DrawPix(int(x0), int(y0))
 
 		if x0 == x1 && y0 == y1 {
 			return
 		}
-		e2 := 2 * e
+		var e2 int64 = 2 * e
 		if e2 > -dy {
 			e = e - dy
 			x0 = x0 + sx
