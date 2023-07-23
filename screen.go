@@ -11,12 +11,14 @@ import (
 )
 
 const (
-	rows    = 25 * 2
-	columns = 80 * 2
+	rows          = 25 * 2
+	columns       = 80 * 2
+	columnsWord   = columns * 2
+	totalTextSize = rows * columns * 2
 )
 
 type Instance struct {
-	videoTextMemory  [rows * columns * 2]byte
+	videoTextMemory  [totalTextSize]byte
 	Border           int
 	Height           int
 	Width            int
@@ -215,16 +217,16 @@ func (i *Instance) DrawVideoTextMode() {
 }
 
 func (i *Instance) clearVideoTextMode() {
-	copy(i.videoTextMemory[:], make([]byte, len(i.videoTextMemory)))
-	for idx := 0; idx < len(i.videoTextMemory); idx += 2 {
+	copy(i.videoTextMemory[:], make([]byte, totalTextSize))
+	for idx := 0; idx < totalTextSize; idx += 2 {
 		i.videoTextMemory[idx] = i.CurrentColor
 	}
 }
 
 func (i *Instance) moveLineUp() {
-	copy(i.videoTextMemory[0:], i.videoTextMemory[columns*2:])
-	copy(i.videoTextMemory[len(i.videoTextMemory)-columns*2:], make([]byte, columns*2))
-	for idx := len(i.videoTextMemory) - columns*2; idx < len(i.videoTextMemory); idx += 2 {
+	copy(i.videoTextMemory[0:], i.videoTextMemory[columnsWord:])
+	copy(i.videoTextMemory[totalTextSize-columnsWord:], make([]byte, columnsWord))
+	for idx := totalTextSize - columnsWord; idx < totalTextSize; idx += 2 {
 		i.videoTextMemory[idx] = i.CurrentColor
 	}
 }
@@ -233,8 +235,8 @@ func (i *Instance) correctVideoCursor() {
 	if i.cursor < 0 {
 		i.cursor = 0
 	}
-	for i.cursor >= rows*columns*2 {
-		i.cursor -= columns * 2
+	for i.cursor >= totalTextSize {
+		i.cursor -= columnsWord
 		i.moveLineUp()
 	}
 }
@@ -255,11 +257,11 @@ func (i *Instance) Print(msg string) {
 
 		switch c {
 		case 13:
-			i.cursor += columns * 2
+			i.cursor += columnsWord
 			continue
 		case 10:
-			aux := i.cursor / (columns * 2)
-			aux = aux * (columns * 2)
+			aux := i.cursor / columnsWord
+			aux = aux * columnsWord
 			i.cursor = aux
 			continue
 		}
@@ -282,9 +284,9 @@ func (i *Instance) keyTreatment(c byte, f func(c byte)) {
 }
 
 func (i *Instance) getLine() string {
-	aux := i.cursor / (columns * 2)
+	aux := i.cursor / columnsWord
 	var ret string
-	for idx := aux*(columns*2) + 1; idx < aux*(columns*2)+columns*2; idx += 2 {
+	for idx := aux*columnsWord + 1; idx < aux*columnsWord+columnsWord; idx += 2 {
 		c := i.videoTextMemory[idx]
 		if c == 0 {
 			break
@@ -340,9 +342,9 @@ func (i *Instance) Input() {
 	if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 		i.keyTreatment(0, func(c byte) {
 			i.eval(i.getLine())
-			i.cursor += columns * 2
-			aux := i.cursor / (columns * 2)
-			aux = aux * (columns * 2)
+			i.cursor += columnsWord
+			aux := i.cursor / columnsWord
+			aux = aux * columnsWord
 			i.cursor = aux
 			i.correctVideoCursor()
 		})
@@ -352,8 +354,8 @@ func (i *Instance) Input() {
 	if ebiten.IsKeyPressed(ebiten.KeyBackspace) {
 		i.keyTreatment(0, func(c byte) {
 			i.cursor -= 2
-			line := i.cursor / (columns * 2)
-			lineEnd := line*columns*2 + columns*2
+			line := i.cursor / columnsWord
+			lineEnd := line*columnsWord + columnsWord
 			if i.cursor < 0 {
 				i.cursor = 0
 			}
@@ -398,14 +400,14 @@ func (i *Instance) Input() {
 
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
 		i.keyTreatment(0, func(c byte) {
-			i.cursor -= columns * 2
+			i.cursor -= columnsWord
 			i.correctVideoCursor()
 		})
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyDown) {
 		i.keyTreatment(0, func(c byte) {
-			i.cursor += columns * 2
+			i.cursor += columnsWord
 			i.correctVideoCursor()
 		})
 		return
@@ -439,7 +441,7 @@ func (i *Instance) Input() {
 	}
 
 	i.cpx, i.cpy = ebiten.CursorPosition()
-	fmt.Printf("X: %d, Y: %d\n", i.cpx, i.cpy)
+	//fmt.Printf("X: %d, Y: %d\n", i.cpx, i.cpy)
 
 	// Display the information with "X: xx, Y: xx" format
 	//ebitenutil.DebugPrint(screen, fmt.Sprintf("X: %d, Y: %d", x, y))
