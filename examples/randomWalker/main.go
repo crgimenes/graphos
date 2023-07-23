@@ -7,45 +7,33 @@ import (
 	"crg.eti.br/go/graphos"
 )
 
-type walker struct {
+type Walker struct {
 	X int
 	Y int
 }
 
 var (
-	cg      *graphos.Instance
-	walkers []walker
+	walker Walker
 )
-
-var color byte
-
-func getNextColor() byte {
-	color++
-	if color > 15 {
-		color = 1
-	}
-	return color
-}
 
 func update(screen *graphos.Instance) error {
 
-	for i := 0; i < len(walkers); i++ {
-		x := random(1, 5)
-		switch x {
-		case 1:
-			walkers[i].X++
-		case 2:
-			walkers[i].X--
-		case 3:
-			walkers[i].Y++
-		case 4:
-			walkers[i].Y--
-		}
-
-		//screen.CurrentColor = getNextColor()
-		screen.CurrentColor = 15
-		screen.DrawPix(walkers[i].X, walkers[i].Y, getNextColor())
+	x := random(1, 5)
+	switch x {
+	case 1:
+		walker.X++
+	case 2:
+		walker.X--
+	case 3:
+		walker.Y++
+	case 4:
+		walker.Y--
 	}
+
+	//screen.CurrentColor = getNextColor()
+	screen.CurrentColor = 15
+	screen.DrawPix(walker.X, walker.Y, 0x0F)
+
 	return nil
 }
 
@@ -56,20 +44,17 @@ func random(min, max int) int {
 func main() {
 	rand.Seed(time.Now().Unix())
 
-	cg = graphos.New()
-	//cg.Width = 800
-	//cg.Height = 600
-	//cg.Scale = 1
+	cg := graphos.New()
+	cg.Width = 800 / 4
+	cg.Height = 600 / 4
+	cg.Scale = 4
 	cg.ScreenHandler = update
 	cg.Title = "Random Walker"
 	cg.CurrentColor = 0
 
-	for i := 0; i < 10; i++ {
-		w := walker{
-			X: random(10, cg.Width-10),
-			Y: random(10, cg.Height-10),
-		}
-		walkers = append(walkers, w)
+	walker = Walker{
+		X: cg.Width / 2,
+		Y: cg.Height / 2,
 	}
 
 	cg.Run()
