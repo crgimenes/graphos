@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/crgimenes/graphos"
+	"crg.eti.br/go/graphos"
 )
 
 type dot struct {
@@ -137,7 +137,7 @@ func random(min, max int) int {
 func main() {
 	rand.Seed(time.Now().Unix())
 
-	cg = graphos.Get()
+	cg = graphos.New()
 	cg.Width = 800
 	cg.Height = 600
 	cg.Scale = 1

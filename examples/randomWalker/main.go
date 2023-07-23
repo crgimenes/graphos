@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/crgimenes/graphos"
+	"crg.eti.br/go/graphos"
 )
 
 type walker struct {
@@ -42,8 +42,9 @@ func update(screen *graphos.Instance) error {
 			walkers[i].Y--
 		}
 
-		screen.CurrentColor = getNextColor()
-		screen.DrawPix(walkers[i].X, walkers[i].Y)
+		//screen.CurrentColor = getNextColor()
+		screen.CurrentColor = 15
+		screen.DrawPix(walkers[i].X, walkers[i].Y, getNextColor())
 	}
 	return nil
 }
@@ -55,13 +56,13 @@ func random(min, max int) int {
 func main() {
 	rand.Seed(time.Now().Unix())
 
-	cg = graphos.Get()
-	cg.Width = 800
-	cg.Height = 600
-	cg.Scale = 1
+	cg = graphos.New()
+	//cg.Width = 800
+	//cg.Height = 600
+	//cg.Scale = 1
 	cg.ScreenHandler = update
 	cg.Title = "Random Walker"
-	cg.CurrentColor = 0x0
+	cg.CurrentColor = 0
 
 	for i := 0; i < 10; i++ {
 		w := walker{

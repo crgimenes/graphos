@@ -18,31 +18,31 @@ func DistanceManhattan(x0, y0, x1, y1 int) int {
 	return (x1 - x0) + (y1 - y0)
 }
 
-func abs(n int64) int64 {
+func abs(n int) int {
 	y := n >> 63
 	return (n ^ y) - y
 }
 
-func (p *Instance) DrawLine(x0, y0, x1, y1 int64) {
+func (p *Instance) DrawLine(x0, y0, x1, y1 int) {
 	dx := abs(x1 - x0)
 	dy := abs(y1 - y0)
-	sx := int64(-1)
+	sx := int(-1)
 	if x0 < x1 {
 		sx = 1
 	}
-	sy := int64(-1)
+	sy := int(-1)
 	if y0 < y1 {
 		sy = 1
 	}
 	e := dx - dy
 
 	for {
-		p.DrawPix(int(x0), int(y0))
+		p.DrawPix(int(x0), int(y0), p.CurrentColor)
 
 		if x0 == x1 && y0 == y1 {
 			return
 		}
-		var e2 int64 = 2 * e
+		var e2 int = 2 * e
 		if e2 > -dy {
 			e = e - dy
 			x0 = x0 + sx
@@ -56,12 +56,12 @@ func (p *Instance) DrawLine(x0, y0, x1, y1 int64) {
 
 func (p *Instance) Box(x1, y1, x2, y2 int) {
 	for y := y1; y <= y2; y++ {
-		p.DrawPix(x1, y)
-		p.DrawPix(x2, y)
+		p.DrawPix(x1, y, p.CurrentColor)
+		p.DrawPix(x2, y, p.CurrentColor)
 	}
 	for x := x1; x <= x2; x++ {
-		p.DrawPix(x, y1)
-		p.DrawPix(x, y2)
+		p.DrawPix(x, y1, p.CurrentColor)
+		p.DrawPix(x, y2, p.CurrentColor)
 	}
 }
 
@@ -71,14 +71,14 @@ func (p *Instance) Circle(x0, y0, radius int) {
 	e := 0
 
 	for x >= y {
-		p.DrawPix(x0+x, y0+y)
-		p.DrawPix(x0+y, y0+x)
-		p.DrawPix(x0-y, y0+x)
-		p.DrawPix(x0-x, y0+y)
-		p.DrawPix(x0-x, y0-y)
-		p.DrawPix(x0-y, y0-x)
-		p.DrawPix(x0+y, y0-x)
-		p.DrawPix(x0+x, y0-y)
+		p.DrawPix(x0+x, y0+y, p.CurrentColor)
+		p.DrawPix(x0+y, y0+x, p.CurrentColor)
+		p.DrawPix(x0-y, y0+x, p.CurrentColor)
+		p.DrawPix(x0-x, y0+y, p.CurrentColor)
+		p.DrawPix(x0-x, y0-y, p.CurrentColor)
+		p.DrawPix(x0-y, y0-x, p.CurrentColor)
+		p.DrawPix(x0+y, y0-x, p.CurrentColor)
+		p.DrawPix(x0+x, y0-y, p.CurrentColor)
 
 		if e <= 0 {
 			y += 1
@@ -100,12 +100,12 @@ func (p *Instance) DrawFilledCircle(x0, y0, radius int) {
 
 	for x >= y {
 		for i := x0 - x; i <= x0+x; i++ {
-			p.DrawPix(i, y0+y)
-			p.DrawPix(i, y0-y)
+			p.DrawPix(i, y0+y, p.CurrentColor)
+			p.DrawPix(i, y0-y, p.CurrentColor)
 		}
 		for i := x0 - y; i <= x0+y; i++ {
-			p.DrawPix(i, y0+x)
-			p.DrawPix(i, y0-x)
+			p.DrawPix(i, y0+x, p.CurrentColor)
+			p.DrawPix(i, y0-x, p.CurrentColor)
 		}
 
 		y++
@@ -119,6 +119,7 @@ func (p *Instance) DrawFilledCircle(x0, y0, radius int) {
 	}
 }
 
+/*
 func (p *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 	var a, b uint64
 	for a = 0; a < 8; a++ {
@@ -133,3 +134,4 @@ func (p *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 		}
 	}
 }
+*/
