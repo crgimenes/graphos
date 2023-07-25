@@ -34,6 +34,7 @@ func getNextColor() byte {
 
 func update(screen *graphos.Instance) error {
 
+	screen.Clear()
 	screen.CurrentColor = 0
 
 	screen.Clear()

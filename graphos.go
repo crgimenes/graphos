@@ -54,7 +54,7 @@ func (p *Instance) DrawLine(x0, y0, x1, y1 int) {
 	}
 }
 
-func (p *Instance) Box(x1, y1, x2, y2 int) {
+func (p *Instance) DrawBox(x1, y1, x2, y2 int) {
 	for y := y1; y <= y2; y++ {
 		p.DrawPix(x1, y, p.CurrentColor)
 		p.DrawPix(x2, y, p.CurrentColor)
@@ -65,7 +65,7 @@ func (p *Instance) Box(x1, y1, x2, y2 int) {
 	}
 }
 
-func (p *Instance) Circle(x0, y0, radius int) {
+func (p *Instance) DrawCircle(x0, y0, radius int) {
 	x := radius
 	y := 0
 	e := 0
@@ -135,3 +135,11 @@ func (p *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 	}
 }
 */
+
+func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int) {
+	for y := y1; y <= y2; y++ {
+		for x := x1; x <= x2; x++ {
+			p.DrawPix(x, y, p.CurrentColor)
+		}
+	}
+}

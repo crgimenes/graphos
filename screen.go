@@ -25,14 +25,15 @@ type Instance struct {
 	Scale            float64
 	CurrentColor     byte
 	UTime            uint64
-	updateScreen     bool
-	tmpScreen        *ebiten.Image
+	UpdateScreen     bool
 	img              *image.RGBA
 	ScreenHandler    func(*Instance) error
 	Title            string
 	cursor           int
 	cursorBlinkTimer int
 	cursorSetBlink   bool
+	cursorLine       int
+	cursorColumn     int
 	Machine          int
 	cpx, cpy         int
 	Font             struct {
@@ -63,27 +64,39 @@ func New() *Instance {
 	return i
 }
 
-var Colors = []struct {
-	R byte
-	G byte
-	B byte
-}{
-	{0, 0, 0},
-	{0, 0, 170},
-	{0, 170, 0},
-	{0, 170, 170},
-	{170, 0, 0},
-	{170, 0, 170},
-	{170, 85, 0},
-	{170, 170, 170},
-	{85, 85, 85},
-	{85, 85, 255},
-	{85, 255, 85},
-	{85, 255, 255},
-	{255, 85, 85},
-	{255, 85, 255},
-	{255, 255, 85},
-	{255, 255, 255},
+type Colors struct {
+	R uint32
+	G uint32
+	B uint32
+	A uint32
+}
+
+func (c Colors) RGBA() (r, g, b, a uint32) {
+	r = c.R
+	g = c.G
+	b = c.B
+	a = c.A
+
+	return
+}
+
+var Colors16 = []Colors{
+	{0, 0, 0, 0xFFFF},
+	{0, 0, 170, 0xFFFF},
+	{0, 170, 0, 0xFFFF},
+	{0, 170, 170, 0xFFFF},
+	{170, 0, 0, 0xFFFF},
+	{170, 0, 170, 0xFFFF},
+	{170, 85, 0, 0xFFFF},
+	{170, 170, 170, 0xFFFF},
+	{85, 85, 85, 0xFFFF},
+	{85, 85, 255, 0xFFFF},
+	{85, 255, 85, 0xFFFF},
+	{85, 255, 255, 0xFFFF},
+	{255, 85, 85, 0xFFFF},
+	{255, 85, 255, 0xFFFF},
+	{255, 255, 85, 0xFFFF},
+	{255, 255, 255, 0xFFFF},
 }
 
 func (i *Instance) Write(p []byte) (n int, err error) {
@@ -96,32 +109,15 @@ func MergeColorCode(b, f byte) byte {
 	return f&0xff | b<<4
 }
 
-func (i *Instance) updateTermScreen(screen *ebiten.Image) error {
-	if i.ScreenHandler != nil {
-		err := i.ScreenHandler(i)
-		if err != nil {
-			return err
-		}
-	}
-	if i.updateScreen {
-		i.tmpScreen.ReplacePixels(i.img.Pix)
-		i.updateScreen = false
-	}
-	screen.DrawImage(i.tmpScreen, nil)
-	i.UTime++
-	return nil
-}
-
 func (i *Instance) Run() {
 
 	i.Font.Bitmap = fonts.Bitmap
 	i.Font.Height = 16
 	i.Font.Width = 9
 	i.img = image.NewRGBA(image.Rect(0, 0, i.Width, i.Height))
-	i.tmpScreen = ebiten.NewImage(i.Width, i.Height)
 
 	i.Clear()
-	i.updateScreen = true
+	i.UpdateScreen = true
 	i.clearVideoTextMode()
 
 	err := ebiten.RunGame(i)
@@ -139,12 +135,13 @@ func (i *Instance) DrawPix(x, y int, color byte) {
 		y >= i.Height-i.Border {
 		return
 	}
+
 	pos := 4*y*i.Width + 4*x
-	i.img.Pix[pos] = Colors[color].R
-	i.img.Pix[pos+1] = Colors[color].G
-	i.img.Pix[pos+2] = Colors[color].B
+	i.img.Pix[pos] = uint8(Colors16[color].R)
+	i.img.Pix[pos+1] = uint8(Colors16[color].G)
+	i.img.Pix[pos+2] = uint8(Colors16[color].B)
 	i.img.Pix[pos+3] = 0xff
-	i.updateScreen = true
+	i.UpdateScreen = true
 }
 
 func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
@@ -153,32 +150,53 @@ func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 	var lColor byte
 	for b = 0; b < 16; b++ {
 		for a = 0; a < 9; a++ {
+			x1 := int(a) + x
+			y1 := int(b) + y
 			if a == 8 {
 				c := bgColor
 				if index >= 192 && index <= 223 {
 					c = lColor
 				}
-				i.DrawPix(int(a)+x, int(b)+y, c)
+				i.DrawPix(x1, y1, c)
 				continue
 			}
 			idx := uint(index)*16 + b
 			if fonts.Bitmap[idx]&(0x80>>a) != 0 {
 				lColor = fgColor
-				i.DrawPix(int(a)+x, int(b)+y, lColor)
+				i.DrawPix(x1, y1, lColor)
 				continue
 			}
 			lColor = bgColor
-			i.DrawPix(int(a)+x, int(b)+y, lColor)
+			i.DrawPix(x1, y1, lColor)
 		}
 	}
 }
 
+/*
+	func (i *Instance) Clear() {
+		for idx := 0; idx < i.Height*i.Width*4; idx += 4 {
+			i.img.Pix[idx] = uint8(Colors16[i.CurrentColor].R)
+			i.img.Pix[idx+1] = uint8(Colors16[i.CurrentColor].G)
+			i.img.Pix[idx+2] = uint8(Colors16[i.CurrentColor].B)
+			i.img.Pix[idx+3] = uint8(Colors16[i.CurrentColor].A)
+		}
+	}
+*/
 func (i *Instance) Clear() {
-	for idx := 0; idx < i.Height*i.Width*4; idx += 4 {
-		i.img.Pix[idx] = Colors[i.CurrentColor].R
-		i.img.Pix[idx+1] = Colors[i.CurrentColor].G
-		i.img.Pix[idx+2] = Colors[i.CurrentColor].B
-		i.img.Pix[idx+3] = 0xff
+	color := Colors16[i.CurrentColor]
+	r := uint8(color.R)
+	g := uint8(color.G)
+	b := uint8(color.B)
+	a := uint8(color.A)
+
+	pix := i.img.Pix
+	pixLen := len(pix)
+
+	for idx := 0; idx < pixLen; idx += 4 {
+		pix[idx] = r
+		pix[idx+1] = g
+		pix[idx+2] = b
+		pix[idx+3] = a
 	}
 }
 
@@ -235,6 +253,7 @@ func (i *Instance) correctVideoCursor() {
 	if i.cursor < 0 {
 		i.cursor = 0
 	}
+
 	for i.cursor >= totalTextSize {
 		i.cursor -= columnsWord
 		i.moveLineUp()
@@ -242,12 +261,9 @@ func (i *Instance) correctVideoCursor() {
 }
 
 func (i *Instance) PutChar(c byte) {
-	i.correctVideoCursor()
 	i.videoTextMemory[i.cursor] = i.CurrentColor
-	i.cursor++
-	i.correctVideoCursor()
-	i.videoTextMemory[i.cursor] = c
-	i.cursor++
+	i.videoTextMemory[i.cursor+1] = c
+	i.cursor += 2
 	i.correctVideoCursor()
 }
 
@@ -451,9 +467,10 @@ func (i *Instance) Input() {
 }
 
 func (i *Instance) Draw(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(1, 1)
-	screen.DrawImage(i.tmpScreen, op)
+	//op := &ebiten.DrawImageOptions{}
+	//op.GeoM.Scale(1, 1)
+	//screen.DrawImage(i.tmpScreen, op)
+	screen.WritePixels(i.img.Pix)
 }
 
 func (i *Instance) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -466,11 +483,6 @@ func (i *Instance) Update() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if i.updateScreen {
-		i.tmpScreen.ReplacePixels(i.img.Pix)
-		i.updateScreen = false
 	}
 
 	i.UTime++

@@ -7,8 +7,8 @@ import (
 )
 
 func update(i *graphos.Instance) error {
-	i.UTime++
-
+	i.CurrentColor = 0x00
+	i.Clear() // Clear screen (with border)
 	i.CurrentColor = 0x0F
 
 	if i.Machine == 0 {
@@ -24,6 +24,7 @@ func update(i *graphos.Instance) error {
 		for ; c < 246; c++ {
 			i.PutChar(c)
 		}
+		i.Println("")
 
 	}
 
@@ -36,6 +37,7 @@ func update(i *graphos.Instance) error {
 func main() {
 
 	cg := graphos.New()
+	//cg.Border = 40
 	cg.Width = 800
 	cg.Height = 600
 	cg.Scale = 1
