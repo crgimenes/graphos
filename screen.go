@@ -172,6 +172,13 @@ func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 	}
 }
 
+func (i *Instance) DrawString(s string, fgColor, bgColor byte, x, y int) {
+	for idx := 0; idx < len(s); idx++ {
+		i.DrawChar(s[idx], fgColor, bgColor, x, y)
+		x += 9
+	}
+}
+
 /*
 	func (i *Instance) Clear() {
 		for idx := 0; idx < i.Height*i.Width*4; idx += 4 {
