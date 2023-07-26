@@ -325,6 +325,11 @@ func (i *Instance) eval(cmd string) {
 	fmt.Println("eval:", cmd)
 }
 
+func (i *Instance) InputChars() []rune {
+	runes := make([]rune, 0, 16)
+	return ebiten.AppendInputChars(runes)
+}
+
 func (i *Instance) Input() {
 	for c := 'A'; c <= 'Z'; c++ {
 		if ebiten.IsKeyPressed(ebiten.Key(c) - 'A' + ebiten.KeyA) {
