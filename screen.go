@@ -46,9 +46,7 @@ type Instance struct {
 		Time uint64
 		Char byte
 	}
-	noKey         bool
-	inputPressed  map[ebiten.Key]func(*Instance)
-	inputReleased map[ebiten.Key]func(*Instance)
+	noKey bool
 }
 
 func New() *Instance {
