@@ -8,6 +8,7 @@ import (
 
 	"crg.eti.br/go/graphos/fonts"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -45,7 +46,9 @@ type Instance struct {
 		Time uint64
 		Char byte
 	}
-	noKey bool
+	noKey         bool
+	inputPressed  map[ebiten.Key]func(*Instance)
+	inputReleased map[ebiten.Key]func(*Instance)
 }
 
 func New() *Instance {
@@ -323,6 +326,18 @@ func (i *Instance) getLine() string {
 
 func (i *Instance) eval(cmd string) {
 	fmt.Println("eval:", cmd)
+}
+
+func (i *Instance) InputPressed(key ebiten.Key, f func(*Instance)) {
+	if inpututil.IsKeyJustPressed(key) {
+		f(i)
+	}
+}
+
+func (i *Instance) InputReleased(key ebiten.Key, f func(*Instance)) {
+	if inpututil.IsKeyJustReleased(key) {
+		f(i)
+	}
 }
 
 func (i *Instance) InputChars() []rune {
