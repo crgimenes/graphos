@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 const (
 	memorySize        = 4096
 	displaySize       = 64 * 32
@@ -134,8 +132,6 @@ func fixAddr(addr uint16) uint16 {
 
 func (c *chip8) MemorySet(addr uint16, value uint8) {
 	addr = fixAddr(addr)
-	fmt.Println("MemorySet2:", addr)
-
 	c.memory[addr] = value
 }
 

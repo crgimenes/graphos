@@ -87,12 +87,10 @@ func input(i *graphos.Instance) {
 	for k, v := range key {
 		i.InputPressed(k, func(i *graphos.Instance) {
 			c8.keys[v] = true
-			fmt.Printf("key %v pressed %X\n", v, v)
 		})
 
 		i.InputReleased(k, func(i *graphos.Instance) {
 			c8.keys[v] = false
-			fmt.Printf("key %v released %X\n", v, v)
 		})
 	}
 
