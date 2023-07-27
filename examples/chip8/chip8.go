@@ -187,3 +187,28 @@ func (c *chip8) SetPixel(x, y uint8, value bool) {
 func (c *chip8) ClearDisplay() {
 	copy(c.display[:], make([][displaySizeHeight]bool, displaySizeWidth))
 }
+
+func (c *chip8) DrawSprite(x, y, sprite, size uint8) bool {
+	colision := false
+	for i := uint8(0); i < size; i++ {
+		for j := uint8(0); j < 8; j++ {
+			xj := x + j
+			if xj >= displaySizeWidth {
+				xj %= displaySizeWidth
+			}
+			yi := y + i
+			if yi >= displaySizeHeight {
+				yi %= displaySizeHeight
+			}
+			if c.GetPixel(xj, yi) {
+				colision = true
+			}
+			px := c.GetPixel(xj, yi)
+			spx := (c.MemoryGet(uint16(sprite)+uint16(i)) & (0x80 >> j)) != 0
+
+			c.SetPixel(xj, yi, px != spx)
+
+		}
+	}
+	return colision
+}

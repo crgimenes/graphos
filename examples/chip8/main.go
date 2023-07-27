@@ -98,6 +98,8 @@ func input(i *graphos.Instance) {
 
 }
 
+var ii = uint8(0)
+
 func update(i *graphos.Instance) error {
 	i.CurrentColor = 0x0
 	i.DrawFilledBox(0, 0, i.Width, i.Height)
@@ -137,6 +139,12 @@ func update(i *graphos.Instance) error {
 		c8.SetPixel(x, y, false)
 		x++
 	}
+
+	ii++
+	c8.DrawSprite(62, 10, 0, 5)
+	c8.DrawSprite(10, 10+ii, 0, 5)
+	c8.DrawSprite(10+ii, 20, 0, 5)
+	c8.DrawSprite(11+ii, 21+ii, 0, 5)
 
 	// TODO: draw stack
 	// TODO: draw display
