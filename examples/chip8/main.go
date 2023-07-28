@@ -150,6 +150,8 @@ func update(i *graphos.Instance) error {
 
 	input(i)
 
+	c8.DelayTimerTick()
+	c8.SoundTimerTick()
 	return nil
 }
 

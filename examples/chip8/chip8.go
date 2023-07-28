@@ -208,3 +208,31 @@ func (c *chip8) DrawSprite(x, y, sprite, size uint8) bool {
 	}
 	return colision
 }
+
+func (c *chip8) DelayTimer() uint8 {
+	return c.delay
+}
+
+func (c *chip8) SetDelayTimer(value uint8) {
+	c.delay = value
+}
+
+func (c *chip8) SoundTimer() uint8 {
+	return c.sound
+}
+
+func (c *chip8) SetSoundTimer(value uint8) {
+	c.sound = value
+}
+
+func (c *chip8) DelayTimerTick() {
+	if c.delay > 0 {
+		c.delay--
+	}
+}
+
+func (c *chip8) SoundTimerTick() {
+	if c.sound > 0 {
+		c.sound--
+	}
+}
