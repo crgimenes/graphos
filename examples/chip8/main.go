@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
+	cg  = graphos.New()
 	c8  = &chip8{}
 	key = map[ebiten.Key]uint8{}
+	ii  = uint8(0)
 )
 
 func drawRegisters(g *graphos.Instance) {
@@ -96,8 +99,6 @@ func input(i *graphos.Instance) {
 
 }
 
-var ii = uint8(0)
-
 func update(i *graphos.Instance) error {
 	i.CurrentColor = 0x0
 	i.DrawFilledBox(0, 0, i.Width, i.Height)
@@ -152,12 +153,15 @@ func update(i *graphos.Instance) error {
 
 	c8.DelayTimerTick()
 	c8.SoundTimerTick()
+
+	if c8.SoundTimer() > 0 {
+		cg.UpdateSound()
+	}
+
 	return nil
 }
 
 func main() {
-
-	cg := graphos.New()
 	cg.Width = 800
 	cg.Height = 600
 	cg.Scale = 1
@@ -186,6 +190,15 @@ func main() {
 
 	c8.InitCharSet()
 	c8.ClearDisplay()
+
+	cg.InitSound()
+
+	c8.SetSoundTimer(20)
+
+	go func() {
+		time.Sleep(10 * time.Second)
+		c8.SetSoundTimer(20)
+	}()
 
 	cg.Run()
 }

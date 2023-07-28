@@ -233,6 +233,10 @@ func (c *chip8) DelayTimerTick() {
 
 func (c *chip8) SoundTimerTick() {
 	if c.sound > 0 {
+		cg.PlaySound()
 		c.sound--
+		if c.sound == 0 {
+			cg.StopWav()
+		}
 	}
 }
