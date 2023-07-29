@@ -154,10 +154,6 @@ func update(i *graphos.Instance) error {
 	c8.DelayTimerTick()
 	c8.SoundTimerTick()
 
-	if c8.SoundTimer() > 0 {
-		cg.UpdateSound()
-	}
-
 	return nil
 }
 

@@ -1,8 +1,8 @@
 package graphos
 
 import (
+	"embed"
 	"fmt"
-	"os"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
@@ -16,51 +16,39 @@ var (
 	audioContext *audio.Context
 	audioPlayer  *audio.Player
 	isPlaying    = false
+
+	//go:embed fixture
+	assets embed.FS
 )
 
-var xxx = true
-
-func playWavLoop(filename string) error {
+func PrepareWavLoop(filename string) error {
 
 	var xs *audio.InfiniteLoop
-	if xxx {
-		xxx = false
-		// Abra o arquivo WAV
-		f, err := os.Open(filename)
-		if err != nil {
-			return fmt.Errorf("não foi possível abrir o arquivo WAV: %v", err)
-		}
-		//defer f.Close() // TODO: close file after playing (test if loop)
 
-		// Decodifique o arquivo WAV
-		wavStream, err := wav.Decode(audioContext, f)
-		if err != nil {
-			return fmt.Errorf("não foi possível decodificar o arquivo WAV: %v", err)
-		}
+	// f, err := os.Open(filename)
+	f, err := assets.Open(filename)
+	if err != nil {
+		return fmt.Errorf("file not found: %v, error: %v", filename, err)
+	}
+	//defer f.Close() // TODO: close file after playing (test if loop)
 
-		xs = audio.NewInfiniteLoop(wavStream, wavStream.Length())
-
-		// Crie um player de áudio para reproduzir o arquivo em loop
-		//audioPlayer, err = audio.NewPlayer(audioContext, wavStream)
-		audioPlayer, err = audioContext.NewPlayer(xs)
-		if err != nil {
-			return fmt.Errorf("não foi possível criar o player de áudio: %v", err)
-		}
+	// Decodifique o arquivo WAV
+	wavStream, err := wav.Decode(audioContext, f)
+	if err != nil {
+		return fmt.Errorf("decode wav file: %v, error: %v", filename, err)
 	}
 
-	audioPlayer.Play()
+	xs = audio.NewInfiniteLoop(wavStream, wavStream.Length())
 
-	// Defina o player de áudio para repetir em loop
-	// audioPlayer.SetLooping(true) // see NewInfiniteLoop
-
-	// Inicie a reprodução
-
-	isPlaying = true
+	audioPlayer, err = audioContext.NewPlayer(xs)
+	if err != nil {
+		return fmt.Errorf("new player: %v, error: %v", filename, err)
+	}
 
 	return nil
 }
 
-func (p *Instance) StopWav() {
+func (p *Instance) Stop() {
 	if audioPlayer != nil {
 		audioPlayer.Pause()
 		//audioPlayer.Seek(0)
@@ -68,17 +56,17 @@ func (p *Instance) StopWav() {
 	}
 }
 
-func (p *Instance) UpdateSound() error {
-	err := playWavLoop("fixture/tik.wav")
-	return err
-}
-
-func (p *Instance) PlaySound() {
-	if audioPlayer != nil {
-		audioPlayer.Play()
+func (p *Instance) Play() {
+	if isPlaying || audioPlayer == nil {
+		return
 	}
+	audioPlayer.Play()
 }
 
 func (p *Instance) InitSound() {
 	audioContext = audio.NewContext(sampleRate)
+	err := PrepareWavLoop("fixture/tik.wav")
+	if err != nil {
+		panic(err)
+	}
 }
