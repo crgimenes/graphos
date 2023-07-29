@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -152,7 +151,7 @@ func update(i *graphos.Instance) error {
 	input(i)
 
 	c8.DelayTimerTick()
-	c8.SoundTimerTick()
+	//c8.SoundTimerTick()
 
 	return nil
 }
@@ -187,14 +186,15 @@ func main() {
 	c8.InitCharSet()
 	c8.ClearDisplay()
 
-	cg.InitSound()
+	//cg.InitSound()
+	//c8.SetSoundTimer(20)
 
-	c8.SetSoundTimer(20)
-
-	go func() {
-		time.Sleep(10 * time.Second)
-		c8.SetSoundTimer(20)
-	}()
+	/*
+		go func() {
+			time.Sleep(10 * time.Second)
+			c8.SetSoundTimer(20)
+		}()
+	*/
 
 	cg.Run()
 }
