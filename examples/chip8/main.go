@@ -43,7 +43,7 @@ func drawKeyboard(g *graphos.Instance) {
 		0xA, 0x0, 0xB, 0xF,
 	}
 	xBase, yBase := 500, 300
-	//g.DrawFilledBox(xBase, yBase, xBase+130, yBase+130, 0xF)
+	g.DrawFilledBox(xBase-11, yBase+20, xBase+109, yBase+140, 0xF)
 	x, y := xBase, yBase
 	for i := 0; i < 16; i++ {
 		x += 30
