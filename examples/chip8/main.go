@@ -28,7 +28,7 @@ func drawRegisters(g *graphos.Instance) {
 	}
 }
 
-func drawChip8Keys(g *graphos.Instance) {
+func drawKeyboard(g *graphos.Instance) {
 	/*
 		1 2 3 C
 		4 5 6 D
@@ -43,6 +43,7 @@ func drawChip8Keys(g *graphos.Instance) {
 		0xA, 0x0, 0xB, 0xF,
 	}
 	xBase, yBase := 500, 300
+	//g.DrawFilledBox(xBase, yBase, xBase+130, yBase+130, 0xF)
 	x, y := xBase, yBase
 	for i := 0; i < 16; i++ {
 		x += 30
@@ -52,11 +53,12 @@ func drawChip8Keys(g *graphos.Instance) {
 		}
 		c := fmt.Sprintf("%X", keys[i])
 		if c8.keys[keys[i]] {
+			g.DrawFilledBox(x-10, y-9, x+18, y+19, 0x0F)
 			g.DrawString(c, 0, 0x0F, x, y)
 			continue
 		}
+		g.DrawFilledBox(x-10, y-9, x+18, y+19, 0x0)
 		g.DrawString(c, 0x0F, 0, x, y)
-
 	}
 }
 
@@ -99,8 +101,7 @@ func input(i *graphos.Instance) {
 }
 
 func update(i *graphos.Instance) error {
-	i.CurrentColor = 0x0
-	i.DrawFilledBox(0, 0, i.Width, i.Height)
+	i.DrawFilledBox(0, 0, i.Width, i.Height, 0x0)
 	i.CurrentColor = 0xF
 
 	//i.Input()
@@ -113,15 +114,13 @@ func update(i *graphos.Instance) error {
 	*/
 
 	// i.DrawLine(0, 0, i.Width, i.Height)
-	//i.CurrentColor = 0x00
-	//i.DrawFilledBox(0, 0, 800, 600)
 
 	//i.DrawChar('A', 0x0F, 0, 300, 300)
 	//i.DrawString("Teste de string", 0x0F, 0, 300, 300)
 	//i.DrawString("Teste de string", 0x0, 0x0F, 300, 300+17)
 
 	//i.CurrentColor = 0x0F
-	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4)
+	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4, 0xF)
 
 	drawRegisters(i)
 	drawDisplay(i, 8, 8)
@@ -144,11 +143,10 @@ func update(i *graphos.Instance) error {
 	c8.DrawSprite(10+ii, 20, 0, 5)
 	c8.DrawSprite(11+ii, 21+ii, 0, 5)
 
-	// TODO: draw stack
-	// TODO: draw display
-	drawChip8Keys(i)
-
 	input(i)
+
+	// TODO: draw stack
+	drawKeyboard(i)
 
 	c8.DelayTimerTick()
 	//c8.SoundTimerTick()

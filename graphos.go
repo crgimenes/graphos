@@ -1,6 +1,8 @@
 package graphos
 
-import "math"
+import (
+	"math"
+)
 
 func Distance(x0, y0, x1, y1 int) int {
 	first := math.Pow(float64(x1-x0), 2)
@@ -136,10 +138,10 @@ func (p *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 }
 */
 
-func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int) {
+func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int, color byte) {
 	for y := y1; y <= y2; y++ {
 		for x := x1; x <= x2; x++ {
-			p.DrawPix(x, y, p.CurrentColor)
+			p.DrawPix(x, y, color)
 		}
 	}
 }
