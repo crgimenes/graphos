@@ -5,6 +5,7 @@ import (
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var (
@@ -121,20 +122,36 @@ func drawDisplay(g *graphos.Instance, x, y int) {
 					g.DrawPix(x+i*8+k, y+j*8+l, 0x0)
 				}
 			}
-
 		}
 	}
 }
 
 func input(i *graphos.Instance) {
 	for _, v := range key {
-		i.InputPressed(v.ekey, func(i *graphos.Instance) {
+		if inpututil.IsKeyJustPressed(v.ekey) {
 			c8.keys[v.c8key] = true
-		})
+			continue
+		}
 
-		i.InputReleased(v.ekey, func(i *graphos.Instance) {
+		if inpututil.IsKeyJustReleased(v.ekey) {
 			c8.keys[v.c8key] = false
-		})
+			continue
+		}
+
+		x, y := ebiten.CursorPosition()
+
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if x >= v.x && x <= v.x1 && y >= v.y && y <= v.y1 {
+				c8.keys[v.c8key] = true
+			}
+			continue
+		}
+
+		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+			//if x >= v.x && x <= v.x1 && y >= v.y && y <= v.y1 {
+			c8.keys[v.c8key] = false
+			//}
+		}
 	}
 }
 
