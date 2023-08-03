@@ -10,7 +10,7 @@ import (
 var (
 	cg  = graphos.New()
 	c8  = &chip8{}
-	key = map[ebiten.Key]uint8{}
+	key = makeKeyMap()
 	ii  = uint8(0)
 )
 
@@ -28,13 +28,23 @@ func drawRegisters(g *graphos.Instance) {
 	}
 }
 
-func drawKeyboard(g *graphos.Instance) {
+type keyMap struct {
+	ekey   ebiten.Key
+	c8key  uint8
+	cx, cy int
+	x, y   int
+	x1, y1 int
+	chr    string
+}
+
+func makeKeyMap() []keyMap {
 	/*
 		1 2 3 C
 		4 5 6 D
 		7 8 9 E
 		A 0 B F
 	*/
+	km := [16]keyMap{}
 
 	keys := []byte{
 		0x1, 0x2, 0x3, 0xC,
@@ -42,8 +52,15 @@ func drawKeyboard(g *graphos.Instance) {
 		0x7, 0x8, 0x9, 0xE,
 		0xA, 0x0, 0xB, 0xF,
 	}
+
+	ekeys := []ebiten.Key{
+		ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.KeyC,
+		ebiten.Key4, ebiten.Key5, ebiten.Key6, ebiten.KeyD,
+		ebiten.Key7, ebiten.Key8, ebiten.Key9, ebiten.KeyE,
+		ebiten.KeyA, ebiten.Key0, ebiten.KeyB, ebiten.KeyF,
+	}
+
 	xBase, yBase := 500, 300
-	g.DrawFilledBox(xBase-11, yBase+20, xBase+109, yBase+140, 0xF)
 	x, y := xBase, yBase
 	for i := 0; i < 16; i++ {
 		x += 30
@@ -51,14 +68,36 @@ func drawKeyboard(g *graphos.Instance) {
 			x = xBase
 			y += 30
 		}
-		c := fmt.Sprintf("%X", keys[i])
-		if c8.keys[keys[i]] {
-			g.DrawFilledBox(x-10, y-9, x+18, y+19, 0x0F)
-			g.DrawString(c, 0, 0x0F, x, y)
+
+		km[i] = keyMap{
+			ekey:  ekeys[i],
+			c8key: keys[i],
+			cx:    x,
+			cy:    y,
+			x:     x - 10,
+			y:     y - 9,
+			x1:    x + 18,
+			y1:    y + 19,
+			chr:   fmt.Sprintf("%X", keys[i]),
+		}
+	}
+
+	return km[:]
+}
+
+func drawKeyboard(g *graphos.Instance) {
+	xBase, yBase := 500, 300
+	g.DrawFilledBox(xBase-11, yBase+20, xBase+109, yBase+140, 0xF)
+	for i := 0; i < 16; i++ {
+		k := key[i]
+		c := key[i].chr
+		if c8.keys[key[i].c8key] {
+			g.DrawFilledBox(k.x, k.y, k.x1, k.y1, 0x0F)
+			g.DrawString(c, 0, 0x0F, k.cx, k.cy)
 			continue
 		}
-		g.DrawFilledBox(x-10, y-9, x+18, y+19, 0x0)
-		g.DrawString(c, 0x0F, 0, x, y)
+		g.DrawFilledBox(k.x, k.y, k.x1, k.y1, 0x0)
+		g.DrawString(c, 0x0F, 0, k.cx, k.cy)
 	}
 }
 
@@ -88,16 +127,15 @@ func drawDisplay(g *graphos.Instance, x, y int) {
 }
 
 func input(i *graphos.Instance) {
-	for k, v := range key {
-		i.InputPressed(k, func(i *graphos.Instance) {
-			c8.keys[v] = true
+	for _, v := range key {
+		i.InputPressed(v.ekey, func(i *graphos.Instance) {
+			c8.keys[v.c8key] = true
 		})
 
-		i.InputReleased(k, func(i *graphos.Instance) {
-			c8.keys[v] = false
+		i.InputReleased(v.ekey, func(i *graphos.Instance) {
+			c8.keys[v.c8key] = false
 		})
 	}
-
 }
 
 func update(i *graphos.Instance) error {
@@ -161,25 +199,6 @@ func main() {
 	cg.ScreenHandler = update
 	cg.Title = "chip8"
 	cg.CurrentColor = 0x0F
-
-	key = map[ebiten.Key]uint8{
-		ebiten.Key0: 0x0,
-		ebiten.Key1: 0x1,
-		ebiten.Key2: 0x2,
-		ebiten.Key3: 0x3,
-		ebiten.Key4: 0x4,
-		ebiten.Key5: 0x5,
-		ebiten.Key6: 0x6,
-		ebiten.Key7: 0x7,
-		ebiten.Key8: 0x8,
-		ebiten.Key9: 0x9,
-		ebiten.KeyA: 0xA,
-		ebiten.KeyB: 0xB,
-		ebiten.KeyC: 0xC,
-		ebiten.KeyD: 0xD,
-		ebiten.KeyE: 0xE,
-		ebiten.KeyF: 0xF,
-	}
 
 	c8.InitCharSet()
 	c8.ClearDisplay()
