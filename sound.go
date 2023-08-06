@@ -64,6 +64,7 @@ func (p *Instance) Play() {
 }
 
 func (p *Instance) InitSound() {
+	// TODO: reimplement sound (loops, individual files, wave forms, play frequency, etc)
 	audioContext = audio.NewContext(sampleRate)
 	err := PrepareWavLoop("fixture/tik.wav")
 	if err != nil {

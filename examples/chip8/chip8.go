@@ -1,10 +1,16 @@
 package main
 
+import (
+	"embed"
+	"fmt"
+)
+
 const (
 	memorySize        = 4096
 	displaySize       = 64 * 32
 	displaySizeWidth  = 64
 	displaySizeHeight = 32
+	programStart      = 0x200
 )
 
 var (
@@ -105,6 +111,9 @@ var (
 		0x80, // *
 		0x80, // *
 	}
+
+	//go:embed roms/*
+	roms embed.FS
 )
 
 type chip8 struct {
@@ -239,4 +248,97 @@ func (c *chip8) SoundTimerTick() {
 			cg.Stop()
 		}
 	}
+}
+
+func (c *chip8) LoadProgram(program []uint8) {
+	for i := 0; i < len(program); i++ {
+		c.MemorySet(uint16(i)+programStart, program[i])
+	}
+}
+
+func (c *chip8) LoadROM(filename string) {
+	program, err := roms.ReadFile("roms/" + filename)
+	if err != nil {
+		fmt.Println("Error loading ROM file:", err)
+		return
+	}
+	c.LoadProgram(program)
+}
+
+func retIfPrintable(c uint8) string {
+	if c >= 32 && c <= 126 {
+		return fmt.Sprintf("%c", c)
+	}
+	return "." // non printable
+}
+
+func (c *chip8) PrintRAM() {
+	s := "" // char column
+	for i := 0; i < len(c.memory); i++ {
+		// print address
+		if i%16 == 0 {
+			fmt.Printf("%04X: ", i)
+		}
+
+		fmt.Printf("%02X ", c.memory[i])
+
+		s += retIfPrintable(c.memory[i])
+		if i%16 == 15 {
+			fmt.Printf("| %s\n", s)
+			s = ""
+		}
+	}
+}
+
+func (c *chip8) ExecOpcode(opcode uint16) {
+	if c.PC >= memorySize {
+		c.PC %= memorySize
+		fmt.Printf("PC overflow: %04X\n", c.PC)
+	}
+
+	//fmt.Printf("executing opcode: %04X\n", opcode)
+	switch opcode & 0xF000 {
+	case 0x0000:
+		switch opcode & 0x00FF {
+		case 0x00E0: // 00E0 - CLS
+			c.ClearDisplay()
+			c.PC += 2
+		case 0x00EE: // 00EE - RET
+			c.PC = c.Pop()
+		default:
+			fmt.Printf("Unknown opcode: %04X\n", opcode)
+		}
+	case 0x1000: // 1nnn - JP addr
+		c.PC = opcode & 0x0FFF
+	case 0x2000: // 2nnn - CALL addr
+		c.Push(c.PC + 2)
+		c.PC = opcode & 0x0FFF
+	case 0x3000: // 3xkk - SE Vx, byte
+		if c.GetV(uint8((opcode&0x0F00)>>8)) == uint8(opcode&0x00FF) {
+			c.PC += 4
+		} else {
+			c.PC += 2
+		}
+	case 0x4000: // 4xkk - SNE Vx, byte
+		if c.GetV(uint8((opcode&0x0F00)>>8)) != uint8(opcode&0x00FF) {
+			c.PC += 4
+		} else {
+			c.PC += 2
+		}
+	case 0x5000: // 5xy0 - SE Vx, Vy
+		if c.GetV(uint8((opcode&0x0F00)>>8)) == c.GetV(uint8((opcode&0x00F0)>>4)) {
+			c.PC += 4
+		} else {
+			c.PC += 2
+		}
+	case 0x6000: // 6xkk - LD Vx, byte
+		c.SetV(uint8((opcode&0x0F00)>>8), uint8(opcode&0x00FF))
+		c.PC += 2
+	case 0x7000: // 7xkk - ADD Vx, byte
+		c.SetV(uint8((opcode&0x0F00)>>8), c.GetV(uint8((opcode&0x0F00)>>8))+uint8(opcode&0x00FF))
+		c.PC += 2
+	default:
+		fmt.Printf("Unknown opcode: %04X\n", opcode)
+	}
+
 }

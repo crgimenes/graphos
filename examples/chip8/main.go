@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -204,7 +205,7 @@ func update(i *graphos.Instance) error {
 	drawKeyboard(i)
 
 	c8.DelayTimerTick()
-	//c8.SoundTimerTick()
+	c8.SoundTimerTick()
 
 	return nil
 }
@@ -220,8 +221,8 @@ func main() {
 	c8.InitCharSet()
 	c8.ClearDisplay()
 
-	//cg.InitSound()
-	//c8.SetSoundTimer(20)
+	cg.InitSound()
+	//c8.SetSoundTimer(50)
 
 	/*
 		go func() {
@@ -229,6 +230,11 @@ func main() {
 			c8.SetSoundTimer(20)
 		}()
 	*/
+
+	//c8.LoadProgram([]byte("Teste de RAM"))
+	c8.LoadROM("main.rom")
+	c8.PrintRAM()
+	os.Exit(0)
 
 	cg.Run()
 }
