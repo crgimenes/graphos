@@ -272,12 +272,16 @@ func retIfPrintable(c uint8) string {
 	return "." // non printable
 }
 
+func (c *chip8) ClearRAM() {
+	copy(c.memory[:], make([]uint8, memorySize))
+}
+
 func (c *chip8) PrintRAM() {
 	s := "" // char column
 	for i := 0; i < len(c.memory); i++ {
 		// print address
 		if i%16 == 0 {
-			fmt.Printf("%04X: ", i)
+			fmt.Printf("0x%04X: ", i)
 		}
 
 		fmt.Printf("%02X ", c.memory[i])
