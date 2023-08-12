@@ -133,10 +133,13 @@ type chip8 struct {
 }
 
 func fixAddr(addr uint16) uint16 {
-	if addr >= memorySize {
-		addr %= memorySize
-	}
-	return addr
+	/*
+		if addr >= memorySize {
+			addr %= memorySize
+		}
+	*/
+
+	return addr & (memorySize - 1)
 }
 
 func (c *chip8) MemorySet(addr uint16, value uint8) {
@@ -198,13 +201,9 @@ func (c *chip8) DrawSprite(x, y, sprite, size uint8) bool {
 	for i := uint8(0); i < size; i++ {
 		for j := uint8(0); j < 8; j++ {
 			xj := x + j
-			if xj >= displaySizeWidth {
-				xj %= displaySizeWidth
-			}
+			xj %= displaySizeWidth
 			yi := y + i
-			if yi >= displaySizeHeight {
-				yi %= displaySizeHeight
-			}
+			yi %= displaySizeHeight
 			if c.GetPixel(xj, yi) {
 				colision = true
 			}

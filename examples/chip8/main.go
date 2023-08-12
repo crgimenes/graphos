@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -234,7 +233,7 @@ func main() {
 	//c8.LoadProgram([]byte("Teste de RAM"))
 	c8.LoadROM("main.rom")
 	c8.PrintRAM()
-	os.Exit(0)
+	//os.Exit(0)
 
 	cg.Run()
 }
