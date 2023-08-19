@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"crg.eti.br/go/graphos"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -164,7 +165,7 @@ func update(i *graphos.Instance) error {
 	/*
 		runes := i.InputChars()
 		if len(runes) > 0 {
-			fmt.Printf("runes: %v\n", string(runes))
+			log.Printf("runes: %v\n", string(runes))
 		}
 	*/
 
@@ -180,24 +181,25 @@ func update(i *graphos.Instance) error {
 	drawRegisters(i)
 	drawDisplay(i, 8, 8)
 
-	for x, y := uint8(0), uint8(0); x < 64; x++ {
-		for y = 0; y < 32; y++ {
-			c8.SetPixel(x, y, true)
+	/*
+		for x, y := uint8(0), uint8(0); x < 64; x++ {
+			for y = 0; y < 32; y++ {
+				c8.SetPixel(x, y, true)
+			}
 		}
-	}
 
-	x := uint8(0)
-	for y := uint8(0); y < 32; y++ {
-		c8.SetPixel(x, y, false)
-		x++
-	}
+		x := uint8(0)
+		for y := uint8(0); y < 32; y++ {
+			c8.SetPixel(x, y, false)
+			x++
+		}
 
-	ii++
-	c8.DrawSprite(62, 10, 0, 5)
-	c8.DrawSprite(10, 10+ii, 0, 5)
-	c8.DrawSprite(10+ii, 20, 0, 5)
-	c8.DrawSprite(11+ii, 21+ii, 0, 5)
-
+		ii++
+		c8.DrawSprite(62, 10, 0, 5)
+		c8.DrawSprite(10, 10+ii, 0, 5)
+		c8.DrawSprite(10+ii, 20, 0, 5)
+		c8.DrawSprite(11+ii, 21+ii, 0, 5)
+	*/
 	input(i)
 
 	// TODO: draw stack
@@ -206,10 +208,14 @@ func update(i *graphos.Instance) error {
 	c8.DelayTimerTick()
 	c8.SoundTimerTick()
 
+	c8.Cycle()
+
 	return nil
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
 	cg.Width = 800
 	cg.Height = 600
 	cg.Scale = 1
@@ -231,9 +237,10 @@ func main() {
 	*/
 
 	//c8.LoadProgram([]byte("Teste de RAM"))
-	c8.LoadROM("main.rom")
+	//c8.LoadROM("MAZE")
+	c8.LoadROM("INVADERS")
 	c8.PrintRAM()
-	//os.Exit(0)
 
+	c8.PC = 0x200
 	cg.Run()
 }
