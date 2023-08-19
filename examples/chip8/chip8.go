@@ -255,11 +255,11 @@ func (c *chip8) DelayTimerTick() {
 
 func (c *chip8) SoundTimerTick() {
 	if c.sound > 0 {
-		cg.Play()
+		//cg.Play()
 		c.sound--
-		if c.sound == 0 {
-			cg.Stop()
-		}
+		//if c.sound == 0 {
+		//	cg.Stop()
+		//}
 	}
 }
 
