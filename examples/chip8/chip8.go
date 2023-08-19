@@ -152,6 +152,17 @@ func (c *chip8) MemoryGet(addr uint16) uint8 {
 	return c.memory[addr]
 }
 
+func (c *chip8) MemorySet16(addr uint16, value uint16) {
+	addr = fixAddr(addr)
+	c.memory[addr] = uint8(value >> 8)
+	c.memory[addr+1] = uint8(value & 0x00FF)
+}
+
+func (c *chip8) MemoryGet16(addr uint16) uint16 {
+	addr = fixAddr(addr)
+	return uint16(c.memory[addr])<<8 | uint16(c.memory[addr+1])
+}
+
 func (c *chip8) SetV(index uint8, value uint8) {
 	c.V[index] = value
 	c.ModifiedRegister[index] = 60
@@ -253,6 +264,15 @@ func (c *chip8) LoadProgram(program []uint8) {
 	for i := 0; i < len(program); i++ {
 		c.MemorySet(uint16(i)+programStart, program[i])
 	}
+}
+
+func (c *chip8) PrintProgramFromFile(filename string) {
+	program, err := roms.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Error loading program file:", err)
+		return
+	}
+	c.LoadProgram(program)
 }
 
 func (c *chip8) LoadROM(filename string) {
