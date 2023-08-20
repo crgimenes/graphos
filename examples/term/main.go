@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"crg.eti.br/go/graphos"
 )
@@ -35,12 +36,11 @@ func update(i *graphos.Instance) error {
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
 	cg := graphos.New()
-	//cg.Border = 40
-	cg.Width = 800
-	cg.Height = 600
-	cg.Scale = 1
+	cg.Width = 9 * 80
+	cg.Height = 16 * 25
 	cg.ScreenHandler = update
 	cg.Title = "Graphos - Terminal"
 	cg.CurrentColor = 0x0F

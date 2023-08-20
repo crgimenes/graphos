@@ -46,13 +46,24 @@ func update(screen *graphos.Instance) error {
 		switch x {
 		case 1:
 			dotMain[i].X++
+			if dotMain[i].X > cg.Width-40 {
+				dotMain[i].X = cg.Width - 40
+			}
 		case 2:
 			dotMain[i].X--
+			if dotMain[i].X < 40 {
+				dotMain[i].X = 40
+			}
 		case 3:
 			dotMain[i].Y++
+			if dotMain[i].Y > cg.Height-40 {
+				dotMain[i].Y = cg.Height - 40
+			}
 		case 4:
 			dotMain[i].Y--
-
+			if dotMain[i].Y < 40 {
+				dotMain[i].Y = 40
+			}
 		}
 	}
 
@@ -141,7 +152,6 @@ func main() {
 	cg = graphos.New()
 	cg.Width = 800
 	cg.Height = 600
-	cg.Scale = 1
 	cg.ScreenHandler = update
 	cg.Title = "Minimum Spanning Tree - Prim's Algorithm"
 	cg.CurrentColor = 0x0

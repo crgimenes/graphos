@@ -1,7 +1,6 @@
 package graphos
 
 import (
-	"fmt"
 	"image"
 	"log"
 	"strings"
@@ -12,8 +11,8 @@ import (
 )
 
 const (
-	rows          = 25 * 2
-	columns       = 80 * 2
+	rows          = 25
+	columns       = 80
 	columnsWord   = columns * 2
 	totalTextSize = rows * columns * 2
 )
@@ -21,13 +20,10 @@ const (
 type Instance struct {
 	Running          bool
 	videoTextMemory  [totalTextSize]byte
-	Border           int
 	Height           int
 	Width            int
-	Scale            float64
 	CurrentColor     byte
 	UTime            uint64
-	UpdateScreen     bool
 	img              *image.RGBA
 	ScreenHandler    func(*Instance) error
 	Title            string
@@ -55,7 +51,6 @@ func New() *Instance {
 	i = &Instance{}
 	i.Width = columns * 9
 	i.Height = rows * 16
-	i.Scale = 1
 	i.ScreenHandler = func(i *Instance) error {
 		log.Println("ScreenHandler not defined")
 		return nil
@@ -67,13 +62,15 @@ func New() *Instance {
 }
 
 type Colors struct {
-	R uint32
-	G uint32
-	B uint32
-	A uint32
+	R uint8
+	G uint8
+	B uint8
+	A uint8
 }
 
-func (c Colors) RGBA() (r, g, b, a uint32) {
+type Color uint64
+
+func (c Colors) RGBA() (r, g, b, a uint8) {
 	r = c.R
 	g = c.G
 	b = c.B
@@ -83,22 +80,22 @@ func (c Colors) RGBA() (r, g, b, a uint32) {
 }
 
 var Colors16 = []Colors{
-	{0, 0, 0, 0xFFFF},
-	{0, 0, 170, 0xFFFF},
-	{0, 170, 0, 0xFFFF},
-	{0, 170, 170, 0xFFFF},
-	{170, 0, 0, 0xFFFF},
-	{170, 0, 170, 0xFFFF},
-	{170, 85, 0, 0xFFFF},
-	{170, 170, 170, 0xFFFF},
-	{85, 85, 85, 0xFFFF},
-	{85, 85, 255, 0xFFFF},
-	{85, 255, 85, 0xFFFF},
-	{85, 255, 255, 0xFFFF},
-	{255, 85, 85, 0xFFFF},
-	{255, 85, 255, 0xFFFF},
-	{255, 255, 85, 0xFFFF},
-	{255, 255, 255, 0xFFFF},
+	{0, 0, 0, 0xFF},
+	{0, 0, 170, 0xFF},
+	{0, 170, 0, 0xFF},
+	{0, 170, 170, 0xFF},
+	{170, 0, 0, 0xFF},
+	{170, 0, 170, 0xFF},
+	{170, 85, 0, 0xFF},
+	{170, 170, 170, 0xFF},
+	{85, 85, 85, 0xFF},
+	{85, 85, 255, 0xFF},
+	{85, 255, 85, 0xFF},
+	{85, 255, 255, 0xFF},
+	{255, 85, 85, 0xFF},
+	{255, 85, 255, 0xFF},
+	{255, 255, 85, 0xFF},
+	{255, 255, 255, 0xFF},
 }
 
 func (i *Instance) Write(p []byte) (n int, err error) {
@@ -119,10 +116,20 @@ func (i *Instance) Run() {
 	i.img = image.NewRGBA(image.Rect(0, 0, i.Width, i.Height))
 
 	i.Clear()
-	i.UpdateScreen = true
 	i.clearVideoTextMode()
 
 	i.Running = true
+
+	ebiten.SetWindowTitle(i.Title)
+	ebiten.SetWindowSize(i.Width, i.Height)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.SetWindowDecorated(true)
+	ebiten.SetWindowFloating(false)
+	//ebiten.SetWindowPosition(0, 0)
+	ebiten.SetTPS(20)
+	ebiten.SetScreenClearedEveryFrame(false)
+	ebiten.SetVsyncEnabled(true)
+	ebiten.SetCursorMode(ebiten.CursorModeVisible)
 
 	err := ebiten.RunGame(i)
 	if err != nil {
@@ -131,22 +138,20 @@ func (i *Instance) Run() {
 }
 
 func (i *Instance) DrawPix(x, y int, color byte) {
-	x += i.Border
-	y += i.Border
-
-	if x < i.Border ||
-		y < i.Border ||
-		x >= i.Width-i.Border ||
-		y >= i.Height-i.Border {
-		return
-	}
-
 	pos := 4*y*i.Width + 4*x
-	i.img.Pix[pos] = uint8(Colors16[color].R)
-	i.img.Pix[pos+1] = uint8(Colors16[color].G)
-	i.img.Pix[pos+2] = uint8(Colors16[color].B)
-	i.img.Pix[pos+3] = 0xff
-	i.UpdateScreen = true
+	/*
+		i.img.Pix[pos] = Colors16[color].R
+		i.img.Pix[pos+1] = Colors16[color].G
+		i.img.Pix[pos+2] = Colors16[color].B
+		i.img.Pix[pos+3] = Colors16[color].A
+	*/
+	copy(i.img.Pix[pos:pos+4], []uint8{
+		Colors16[color].R,
+		Colors16[color].G,
+		Colors16[color].B,
+		Colors16[color].A,
+	})
+
 }
 
 func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
@@ -184,22 +189,12 @@ func (i *Instance) DrawString(s string, fgColor, bgColor byte, x, y int) {
 	}
 }
 
-/*
-	func (i *Instance) Clear() {
-		for idx := 0; idx < i.Height*i.Width*4; idx += 4 {
-			i.img.Pix[idx] = uint8(Colors16[i.CurrentColor].R)
-			i.img.Pix[idx+1] = uint8(Colors16[i.CurrentColor].G)
-			i.img.Pix[idx+2] = uint8(Colors16[i.CurrentColor].B)
-			i.img.Pix[idx+3] = uint8(Colors16[i.CurrentColor].A)
-		}
-	}
-*/
 func (i *Instance) Clear() {
 	color := Colors16[i.CurrentColor]
-	r := uint8(color.R)
-	g := uint8(color.G)
-	b := uint8(color.B)
-	a := uint8(color.A)
+	r := color.R
+	g := color.G
+	b := color.B
+	a := color.A
 
 	pix := i.img.Pix
 	pixLen := len(pix)
@@ -327,7 +322,7 @@ func (i *Instance) getLine() string {
 }
 
 func (i *Instance) eval(cmd string) {
-	fmt.Println("eval:", cmd)
+	log.Println("eval:", cmd)
 }
 
 func (i *Instance) InputPressed(key ebiten.Key, f func(*Instance)) {

@@ -158,7 +158,7 @@ func input(i *graphos.Instance) {
 }
 
 func update(i *graphos.Instance) error {
-	i.DrawFilledBox(0, 0, i.Width, i.Height, 0x0)
+	i.DrawFilledBox(0, 0, i.Width-1, i.Height-1, 0x0)
 	i.CurrentColor = 0xF
 
 	//i.Input()
@@ -179,7 +179,7 @@ func update(i *graphos.Instance) error {
 	//i.CurrentColor = 0x0F
 	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4, 0xF)
 
-	//drawRegisters(i)
+	drawRegisters(i)
 	drawDisplay(i, 8, 8)
 
 	/*
@@ -219,7 +219,6 @@ func main() {
 
 	cg.Width = 800
 	cg.Height = 600
-	cg.Scale = 1
 	cg.ScreenHandler = update
 	cg.Title = "chip8"
 	cg.CurrentColor = 0x0F

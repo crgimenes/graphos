@@ -45,9 +45,8 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	cg := graphos.New()
-	cg.Width = 800 / 4
-	cg.Height = 600 / 4
-	cg.Scale = 4
+	cg.Width = 800
+	cg.Height = 600
 	cg.ScreenHandler = update
 	cg.Title = "Random Walker"
 	cg.CurrentColor = 0

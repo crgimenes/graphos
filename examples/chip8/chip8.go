@@ -369,13 +369,6 @@ func (c *chip8) ExecOpcode(opcode uint16) {
 
 	//jumpTable[(opcode&0xF000)>>12](c, opcode)
 
-	j := [16]func(*chip8, uint16){
-		testeJumpTable,
-		testeJumpTable,
-	}
-
-	fmt.Println(j)
-
 	//////////////////////////////
 
 	////log.Printf("executing opcode: %04X\n", opcode)
@@ -665,7 +658,7 @@ func (c *chip8) Cycle() {
 	if deltaTime < (time.Duration(time.Duration(opcodeCount*4) * time.Millisecond)) {
 
 		//if c.PC&15 == 0 {
-		fmt.Printf("deltaTime sleep: %v\n", deltaTime)
+		//fmt.Printf("deltaTime sleep: %v\n", deltaTime)
 		//}
 
 		if deltaTime < 1 {
