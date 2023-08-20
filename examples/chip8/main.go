@@ -89,22 +89,26 @@ func makeKeyMap() []keyMap {
 }
 
 func drawKeyboard(g *graphos.Instance) {
+	black := graphos.Colors16[0]
+	white := graphos.Colors16[0xF]
 	xBase, yBase := 500, 300
-	g.DrawFilledBox(xBase-11, yBase+20, xBase+109, yBase+140, 0xF)
+	g.DrawFilledBox(xBase-11, yBase+20, xBase+109, yBase+140, white)
 	for i := 0; i < 16; i++ {
 		k := key[i]
 		c := key[i].chr
 		if c8.keys[key[i].c8key] {
-			g.DrawFilledBox(k.x, k.y, k.x1, k.y1, 0x0F)
+			g.DrawFilledBox(k.x, k.y, k.x1, k.y1, white)
 			g.DrawString(c, 0, 0x0F, k.cx, k.cy)
 			continue
 		}
-		g.DrawFilledBox(k.x, k.y, k.x1, k.y1, 0x0)
+		g.DrawFilledBox(k.x, k.y, k.x1, k.y1, black)
 		g.DrawString(c, 0x0F, 0, k.cx, k.cy)
 	}
 }
 
 func drawDisplay(g *graphos.Instance, x, y int) {
+	black := graphos.Colors16[0]
+	white := graphos.Colors16[0xF]
 
 	for i := 0; i < 64; i++ {
 		for j := 0; j < 32; j++ {
@@ -112,7 +116,7 @@ func drawDisplay(g *graphos.Instance, x, y int) {
 
 				for k := 0; k < 8; k++ {
 					for l := 0; l < 8; l++ {
-						g.DrawPix(x+i*8+k, y+j*8+l, 0xF)
+						g.DrawPix(x+i*8+k, y+j*8+l, white)
 					}
 				}
 
@@ -121,7 +125,7 @@ func drawDisplay(g *graphos.Instance, x, y int) {
 
 			for k := 0; k < 8; k++ {
 				for l := 0; l < 8; l++ {
-					g.DrawPix(x+i*8+k, y+j*8+l, 0x0)
+					g.DrawPix(x+i*8+k, y+j*8+l, black)
 				}
 			}
 		}
@@ -158,8 +162,10 @@ func input(i *graphos.Instance) {
 }
 
 func update(i *graphos.Instance) error {
-	i.DrawFilledBox(0, 0, i.Width-1, i.Height-1, 0x0)
-	i.CurrentColor = 0xF
+	black := graphos.Colors16[0]
+	white := graphos.Colors16[0xF]
+	i.DrawFilledBox(0, 0, i.Width-1, i.Height-1, black)
+	i.CurrentColor = white
 
 	//i.Input()
 
@@ -177,7 +183,7 @@ func update(i *graphos.Instance) error {
 	//i.DrawString("Teste de string", 0x0, 0x0F, 300, 300+17)
 
 	//i.CurrentColor = 0x0F
-	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4, 0xF)
+	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4, white)
 
 	drawRegisters(i)
 	drawDisplay(i, 8, 8)
@@ -221,7 +227,7 @@ func main() {
 	cg.Height = 600
 	cg.ScreenHandler = update
 	cg.Title = "chip8"
-	cg.CurrentColor = 0x0F
+	cg.CurrentColor = graphos.Colors16[0x0F]
 
 	c8.InitCharSet()
 	c8.ClearDisplay()
@@ -236,7 +242,6 @@ func main() {
 		}()
 	*/
 
-	//c8.LoadProgram([]byte("Teste de RAM"))
 	//c8.LoadROM("MAZE")
 	c8.LoadROM("INVADERS")
 	//c8.LoadROM("PONG2")
@@ -245,8 +250,6 @@ func main() {
 	c8.PC = 0x200
 
 	go func() {
-		//time.Sleep(1 * time.Second)
-
 		for {
 			if cg.Running {
 				c8.Cycle()

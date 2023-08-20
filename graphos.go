@@ -121,24 +121,7 @@ func (p *Instance) DrawFilledCircle(x0, y0, radius int) {
 	}
 }
 
-/*
-func (p *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
-	var a, b uint64
-	for a = 0; a < 8; a++ {
-		for b = 0; b < 8; b++ {
-			if p.Font.Bitmap[index][b]&(0x80>>a) != 0 {
-				p.CurrentColor = fgColor
-				p.DrawPix(int(a)+x, int(b)+y)
-				continue
-			}
-			p.CurrentColor = bgColor
-			p.DrawPix(int(a)+x, int(b)+y)
-		}
-	}
-}
-*/
-
-func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int, color byte) {
+func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int, color Color) {
 	for y := y1; y <= y2; y++ {
 		for x := x1; x <= x2; x++ {
 			p.DrawPix(x, y, color)

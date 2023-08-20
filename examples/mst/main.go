@@ -24,22 +24,22 @@ var (
 
 var color byte
 
-func getNextColor() byte {
+func getNextColor() graphos.Color {
 	color++
 	if color > 15 {
 		color = 1
 	}
-	return color
+	return graphos.Colors16[color]
 }
 
 func update(screen *graphos.Instance) error {
 
 	screen.Clear()
-	screen.CurrentColor = 0
+	screen.CurrentColor = graphos.Colors16[0x0]
 
 	screen.Clear()
 
-	screen.CurrentColor = 0xf
+	screen.CurrentColor = graphos.Colors16[0x0F]
 
 	for i := 0; i < len(dotMain); i++ {
 		x := random(1, 5)
@@ -154,7 +154,7 @@ func main() {
 	cg.Height = 600
 	cg.ScreenHandler = update
 	cg.Title = "Minimum Spanning Tree - Prim's Algorithm"
-	cg.CurrentColor = 0x0
+	cg.CurrentColor = graphos.Colors16[0x0F]
 
 	for i := 0; i < 60; i++ {
 

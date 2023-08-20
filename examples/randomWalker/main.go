@@ -31,8 +31,8 @@ func update(screen *graphos.Instance) error {
 	}
 
 	//screen.CurrentColor = getNextColor()
-	screen.CurrentColor = 15
-	screen.DrawPix(walker.X, walker.Y, 0x0F)
+	screen.CurrentColor = graphos.Colors16[0x0F]
+	screen.DrawPix(walker.X, walker.Y, screen.CurrentColor)
 
 	return nil
 }
@@ -49,7 +49,7 @@ func main() {
 	cg.Height = 600
 	cg.ScreenHandler = update
 	cg.Title = "Random Walker"
-	cg.CurrentColor = 0
+	cg.CurrentColor = graphos.Colors16[0x0]
 
 	walker = Walker{
 		X: cg.Width / 2,

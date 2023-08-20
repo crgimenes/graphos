@@ -22,7 +22,7 @@ type Instance struct {
 	videoTextMemory  [totalTextSize]byte
 	Height           int
 	Width            int
-	CurrentColor     byte
+	CurrentColor     Color
 	UTime            uint64
 	img              *image.RGBA
 	ScreenHandler    func(*Instance) error
@@ -56,21 +56,19 @@ func New() *Instance {
 		return nil
 	}
 	i.Title = "term"
-	i.CurrentColor = 0x0F
+	i.CurrentColor = Colors16[0x0F]
 	i.cursorSetBlink = true
 	return i
 }
 
-type Colors struct {
+type Color struct {
 	R uint8
 	G uint8
 	B uint8
 	A uint8
 }
 
-type Color uint64
-
-func (c Colors) RGBA() (r, g, b, a uint8) {
+func (c Color) RGBA() (r, g, b, a uint8) {
 	r = c.R
 	g = c.G
 	b = c.B
@@ -79,7 +77,7 @@ func (c Colors) RGBA() (r, g, b, a uint8) {
 	return
 }
 
-var Colors16 = []Colors{
+var Colors16 = []Color{
 	{0, 0, 0, 0xFF},
 	{0, 0, 170, 0xFF},
 	{0, 170, 0, 0xFF},
@@ -114,11 +112,8 @@ func (i *Instance) Run() {
 	i.Font.Height = 16
 	i.Font.Width = 9
 	i.img = image.NewRGBA(image.Rect(0, 0, i.Width, i.Height))
-
 	i.Clear()
 	i.clearVideoTextMode()
-
-	i.Running = true
 
 	ebiten.SetWindowTitle(i.Title)
 	ebiten.SetWindowSize(i.Width, i.Height)
@@ -126,10 +121,12 @@ func (i *Instance) Run() {
 	ebiten.SetWindowDecorated(true)
 	ebiten.SetWindowFloating(false)
 	//ebiten.SetWindowPosition(0, 0)
-	ebiten.SetTPS(20)
+	ebiten.SetTPS(24)
 	ebiten.SetScreenClearedEveryFrame(false)
 	ebiten.SetVsyncEnabled(true)
 	ebiten.SetCursorMode(ebiten.CursorModeVisible)
+
+	i.Running = true
 
 	err := ebiten.RunGame(i)
 	if err != nil {
@@ -137,33 +134,27 @@ func (i *Instance) Run() {
 	}
 }
 
-func (i *Instance) DrawPix(x, y int, color byte) {
-	pos := 4*y*i.Width + 4*x
-	/*
-		i.img.Pix[pos] = Colors16[color].R
-		i.img.Pix[pos+1] = Colors16[color].G
-		i.img.Pix[pos+2] = Colors16[color].B
-		i.img.Pix[pos+3] = Colors16[color].A
-	*/
-	copy(i.img.Pix[pos:pos+4], []uint8{
-		Colors16[color].R,
-		Colors16[color].G,
-		Colors16[color].B,
-		Colors16[color].A,
-	})
+func (i *Instance) DrawPix(x, y int, color Color) {
+	pos := i.img.Stride*y + 4*x
 
+	copy(i.img.Pix[pos:pos+4], []uint8{
+		color.R,
+		color.G,
+		color.B,
+		color.A,
+	})
 }
 
 func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 	var a uint
 	var b uint
-	var lColor byte
+	var lColor Color
 	for b = 0; b < 16; b++ {
 		for a = 0; a < 9; a++ {
 			x1 := int(a) + x
 			y1 := int(b) + y
 			if a == 8 {
-				c := bgColor
+				c := Colors16[bgColor]
 				if index >= 192 && index <= 223 {
 					c = lColor
 				}
@@ -172,11 +163,11 @@ func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
 			}
 			idx := uint(index)*16 + b
 			if fonts.Bitmap[idx]&(0x80>>a) != 0 {
-				lColor = fgColor
+				lColor = Colors16[fgColor]
 				i.DrawPix(x1, y1, lColor)
 				continue
 			}
-			lColor = bgColor
+			lColor = Colors16[bgColor]
 			i.DrawPix(x1, y1, lColor)
 		}
 	}
@@ -190,7 +181,7 @@ func (i *Instance) DrawString(s string, fgColor, bgColor byte, x, y int) {
 }
 
 func (i *Instance) Clear() {
-	color := Colors16[i.CurrentColor]
+	color := i.CurrentColor
 	r := color.R
 	g := color.G
 	b := color.B
@@ -244,7 +235,7 @@ func (i *Instance) DrawVideoTextMode() {
 func (i *Instance) clearVideoTextMode() {
 	copy(i.videoTextMemory[:], make([]byte, totalTextSize))
 	for idx := 0; idx < totalTextSize; idx += 2 {
-		i.videoTextMemory[idx] = i.CurrentColor
+		i.videoTextMemory[idx] = 0x0F
 	}
 }
 
@@ -252,7 +243,7 @@ func (i *Instance) moveLineUp() {
 	copy(i.videoTextMemory[0:], i.videoTextMemory[columnsWord:])
 	copy(i.videoTextMemory[totalTextSize-columnsWord:], make([]byte, columnsWord))
 	for idx := totalTextSize - columnsWord; idx < totalTextSize; idx += 2 {
-		i.videoTextMemory[idx] = i.CurrentColor
+		i.videoTextMemory[idx] = 0x0F
 	}
 }
 
@@ -268,7 +259,7 @@ func (i *Instance) correctVideoCursor() {
 }
 
 func (i *Instance) PutChar(c byte) {
-	i.videoTextMemory[i.cursor] = i.CurrentColor
+	i.videoTextMemory[i.cursor] = 0x0F
 	i.videoTextMemory[i.cursor+1] = c
 	i.cursor += 2
 	i.correctVideoCursor()
@@ -401,7 +392,7 @@ func (i *Instance) Input() {
 			}
 
 			copy(i.videoTextMemory[i.cursor:lineEnd], i.videoTextMemory[i.cursor+2:lineEnd])
-			i.videoTextMemory[lineEnd-2] = i.CurrentColor
+			i.videoTextMemory[lineEnd-2] = 0x0F
 			i.videoTextMemory[lineEnd-1] = 0
 
 			i.correctVideoCursor()

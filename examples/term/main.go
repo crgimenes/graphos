@@ -8,9 +8,9 @@ import (
 )
 
 func update(i *graphos.Instance) error {
-	i.CurrentColor = 0x00
+	i.CurrentColor = graphos.Colors16[0x0]
 	i.Clear() // Clear screen (with border)
-	i.CurrentColor = 0x0F
+	i.CurrentColor = graphos.Colors16[0x0F]
 
 	if i.Machine == 0 {
 		i.Machine++
@@ -43,7 +43,7 @@ func main() {
 	cg.Height = 16 * 25
 	cg.ScreenHandler = update
 	cg.Title = "Graphos - Terminal"
-	cg.CurrentColor = 0x0F
+	cg.CurrentColor = graphos.Colors16[0x0F]
 
 	cg.Run()
 
