@@ -179,7 +179,7 @@ func update(i *graphos.Instance) error {
 	//i.CurrentColor = 0x0F
 	i.DrawFilledBox(4, 4, 64*8+8+4, 32*8+8+4, 0xF)
 
-	drawRegisters(i)
+	//drawRegisters(i)
 	drawDisplay(i, 8, 8)
 
 	/*
@@ -240,15 +240,19 @@ func main() {
 	//c8.LoadProgram([]byte("Teste de RAM"))
 	//c8.LoadROM("MAZE")
 	c8.LoadROM("INVADERS")
+	//c8.LoadROM("PONG2")
 	c8.PrintRAM()
 
 	c8.PC = 0x200
 
 	go func() {
-		time.Sleep(1 * time.Second)
+		//time.Sleep(1 * time.Second)
 
 		for {
-			c8.Cycle()
+			if cg.Running {
+				c8.Cycle()
+				continue
+			}
 			time.Sleep(1 * time.Millisecond)
 		}
 	}()

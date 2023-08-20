@@ -19,6 +19,7 @@ const (
 )
 
 type Instance struct {
+	Running          bool
 	videoTextMemory  [totalTextSize]byte
 	Border           int
 	Height           int
@@ -121,6 +122,8 @@ func (i *Instance) Run() {
 	i.UpdateScreen = true
 	i.clearVideoTextMode()
 
+	i.Running = true
+
 	err := ebiten.RunGame(i)
 	if err != nil {
 		log.Fatal(err)
@@ -130,6 +133,7 @@ func (i *Instance) Run() {
 func (i *Instance) DrawPix(x, y int, color byte) {
 	x += i.Border
 	y += i.Border
+
 	if x < i.Border ||
 		y < i.Border ||
 		x >= i.Width-i.Border ||
