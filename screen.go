@@ -13,28 +13,29 @@ import (
 const (
 	rows          = 25
 	columns       = 80
-	columnsWord   = columns * 2
-	totalTextSize = rows * columns * 2
+	columnsWord   = columns
+	totalTextSize = rows * columns
 )
 
 type Instance struct {
-	Running          bool
-	videoTextMemory  [totalTextSize]byte
-	Height           int
-	Width            int
-	CurrentColor     Color
-	UTime            uint64
-	img              *image.RGBA
-	ScreenHandler    func(*Instance) error
-	Title            string
-	cursor           int
-	cursorBlinkTimer int
-	cursorSetBlink   bool
-	cursorLine       int
-	cursorColumn     int
-	Machine          int
-	cpx, cpy         int
-	Font             struct {
+	Running            bool
+	textMemory         [totalTextSize]byte
+	textMemoryAtribute [totalTextSize]byte
+	Height             int
+	Width              int
+	CurrentColor       Color
+	UTime              uint64
+	img                *image.RGBA
+	ScreenHandler      func(*Instance) error
+	Title              string
+	cursor             int
+	cursorBlinkTimer   int
+	cursorSetBlink     bool
+	cursorLine         int
+	cursorColumn       int
+	Machine            int
+	cpx, cpy           int
+	Font               struct {
 		Height int
 		Width  int
 		Bitmap []byte
@@ -217,33 +218,39 @@ func (i *Instance) DrawVideoTextMode() {
 	idx := 0
 	for r := 0; r < rows; r++ {
 		for c := 0; c < columns; c++ {
-			color := i.videoTextMemory[idx]
+			idx = r*columns + c
+			color := i.textMemoryAtribute[idx]
+			char := i.textMemory[idx]
 			f := color & 0x0f
 			b := color & 0xf0 >> 4
 			if idx == i.cursor {
-				idx++
-				i.DrawCursor(i.videoTextMemory[idx], f, b, c*9, r*16)
-			} else {
-				idx++
-				i.DrawChar(i.videoTextMemory[idx], f, b, c*9, r*16)
+				i.DrawCursor(char, f, b, c*9, r*16)
+				continue
 			}
-			idx++
+			i.DrawChar(char, f, b, c*9, r*16)
 		}
 	}
 }
 
 func (i *Instance) clearVideoTextMode() {
-	copy(i.videoTextMemory[:], make([]byte, totalTextSize))
-	for idx := 0; idx < totalTextSize; idx += 2 {
-		i.videoTextMemory[idx] = 0x0F
+	copy(i.textMemory[:], make([]byte, totalTextSize))
+
+	for idx := 0; idx < totalTextSize; idx++ {
+		i.textMemoryAtribute[idx] = 0x0F
 	}
+
+	i.cursor = 0
 }
 
 func (i *Instance) moveLineUp() {
-	copy(i.videoTextMemory[0:], i.videoTextMemory[columnsWord:])
-	copy(i.videoTextMemory[totalTextSize-columnsWord:], make([]byte, columnsWord))
-	for idx := totalTextSize - columnsWord; idx < totalTextSize; idx += 2 {
-		i.videoTextMemory[idx] = 0x0F
+	copy(i.textMemory[0:], i.textMemory[columnsWord:])
+	copy(i.textMemory[totalTextSize-columnsWord:], make([]byte, columnsWord))
+
+	copy(i.textMemoryAtribute[0:], i.textMemoryAtribute[columnsWord:])
+	copy(i.textMemoryAtribute[totalTextSize-columnsWord:], make([]byte, columnsWord))
+
+	for idx := totalTextSize - columnsWord; idx < totalTextSize; idx++ {
+		i.textMemoryAtribute[idx] = 0x0F
 	}
 }
 
@@ -259,9 +266,9 @@ func (i *Instance) correctVideoCursor() {
 }
 
 func (i *Instance) PutChar(c byte) {
-	i.videoTextMemory[i.cursor] = 0x0F
-	i.videoTextMemory[i.cursor+1] = c
-	i.cursor += 2
+	i.textMemoryAtribute[i.cursor] = 0x0F
+	i.textMemory[i.cursor] = c
+	i.cursor++
 	i.correctVideoCursor()
 }
 
@@ -284,12 +291,15 @@ func (i *Instance) Print(msg string) {
 }
 
 func (i *Instance) Println(msg string) {
-	msg += "\r\n"
 	i.Print(msg)
+	i.cursor += columnsWord
+	aux := i.cursor / columnsWord
+	aux = aux * columnsWord
+	i.cursor = aux
 }
 
 func (i *Instance) keyTreatment(c byte, f func(c byte)) {
-	if i.noKey || i.lastKey.Char != c || i.lastKey.Time+20 < i.UTime {
+	if i.noKey || i.lastKey.Char != c || i.lastKey.Time+10 < i.UTime {
 		f(c)
 		i.noKey = false
 		i.lastKey.Char = c
@@ -298,16 +308,11 @@ func (i *Instance) keyTreatment(c byte, f func(c byte)) {
 }
 
 func (i *Instance) getLine() string {
+	rerArr := [columnsWord]byte{}
 	aux := i.cursor / columnsWord
-	var ret string
-	for idx := aux*columnsWord + 1; idx < aux*columnsWord+columnsWord; idx += 2 {
-		c := i.videoTextMemory[idx]
-		if c == 0 {
-			break
-		}
-		ret += string(i.videoTextMemory[idx])
-	}
+	copy(rerArr[:], i.textMemory[aux*columnsWord:aux*columnsWord+columnsWord])
 
+	ret := string(rerArr[:])
 	ret = strings.TrimSpace(ret)
 	return ret
 }
@@ -384,16 +389,16 @@ func (i *Instance) Input() {
 
 	if ebiten.IsKeyPressed(ebiten.KeyBackspace) {
 		i.keyTreatment(0, func(c byte) {
-			i.cursor -= 2
+			i.cursor--
 			line := i.cursor / columnsWord
 			lineEnd := line*columnsWord + columnsWord
 			if i.cursor < 0 {
 				i.cursor = 0
 			}
 
-			copy(i.videoTextMemory[i.cursor:lineEnd], i.videoTextMemory[i.cursor+2:lineEnd])
-			i.videoTextMemory[lineEnd-2] = 0x0F
-			i.videoTextMemory[lineEnd-1] = 0
+			copy(i.textMemory[i.cursor:lineEnd], i.textMemory[i.cursor+1:lineEnd])
+			i.textMemoryAtribute[lineEnd-1] = 0x0F
+			i.textMemory[lineEnd-1] = 0
 
 			i.correctVideoCursor()
 		})
@@ -445,14 +450,14 @@ func (i *Instance) Input() {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 		i.keyTreatment(0, func(c byte) {
-			i.cursor -= 2
+			i.cursor--
 			i.correctVideoCursor()
 		})
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
 		i.keyTreatment(0, func(c byte) {
-			i.cursor += 2
+			i.cursor++
 			i.correctVideoCursor()
 		})
 		return
