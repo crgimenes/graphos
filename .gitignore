@@ -16,4 +16,4 @@
 .DS_Store
 *.wasm
 build.sh
-
+*.prof
