@@ -135,6 +135,7 @@ func update(screen *graphos.Instance) error {
 
 	}
 	dotReached = nil
+	screen.UpdateScreen = true
 	return nil
 }
 

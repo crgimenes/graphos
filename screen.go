@@ -18,6 +18,7 @@ const (
 )
 
 type Instance struct {
+	UpdateScreen       bool
 	Running            bool
 	textMemory         [totalTextSize]byte
 	textMemoryAtribute [totalTextSize]byte
@@ -62,21 +63,7 @@ func New() *Instance {
 	return i
 }
 
-type Color struct {
-	R uint8
-	G uint8
-	B uint8
-	A uint8
-}
-
-func (c Color) RGBA() (r, g, b, a uint8) {
-	r = c.R
-	g = c.G
-	b = c.B
-	a = c.A
-
-	return
-}
+type Color [4]uint8
 
 var Colors16 = []Color{
 	{0, 0, 0, 0xFF},
@@ -138,12 +125,7 @@ func (i *Instance) Run() {
 func (i *Instance) DrawPix(x, y int, color Color) {
 	pos := i.img.Stride*y + 4*x
 
-	copy(i.img.Pix[pos:pos+4], []uint8{
-		color.R,
-		color.G,
-		color.B,
-		color.A,
-	})
+	copy(i.img.Pix[pos:pos+4], color[:])
 }
 
 func (i *Instance) DrawChar(index, fgColor, bgColor byte, x, y int) {
@@ -183,19 +165,13 @@ func (i *Instance) DrawString(s string, fgColor, bgColor byte, x, y int) {
 
 func (i *Instance) Clear() {
 	color := i.CurrentColor
-	r := color.R
-	g := color.G
-	b := color.B
-	a := color.A
-
 	pix := i.img.Pix
-	pixLen := len(pix)
+	lenPix := len(pix)
 
-	for idx := 0; idx < pixLen; idx += 4 {
-		pix[idx] = r
-		pix[idx+1] = g
-		pix[idx+2] = b
-		pix[idx+3] = a
+	copy(pix, color[:])
+
+	for j := 4; j < lenPix; j *= 2 {
+		copy(pix[j:], pix[:j])
 	}
 }
 
@@ -487,10 +463,10 @@ func (i *Instance) Input() {
 }
 
 func (i *Instance) Draw(screen *ebiten.Image) {
-	//op := &ebiten.DrawImageOptions{}
-	//op.GeoM.Scale(1, 1)
-	//screen.DrawImage(i.tmpScreen, op)
-	screen.WritePixels(i.img.Pix)
+	if i.UpdateScreen {
+		screen.WritePixels(i.img.Pix)
+		i.UpdateScreen = false
+	}
 }
 
 func (i *Instance) Layout(outsideWidth, outsideHeight int) (int, int) {

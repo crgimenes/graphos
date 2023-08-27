@@ -57,6 +57,7 @@ func (p *Instance) DrawLine(x0, y0, x1, y1 int) {
 }
 
 func (p *Instance) DrawBox(x1, y1, x2, y2 int) {
+
 	for y := y1; y <= y2; y++ {
 		p.DrawPix(x1, y, p.CurrentColor)
 		p.DrawPix(x2, y, p.CurrentColor)
@@ -122,9 +123,17 @@ func (p *Instance) DrawFilledCircle(x0, y0, radius int) {
 }
 
 func (p *Instance) DrawFilledBox(x1, y1, x2, y2 int, color Color) {
+	pix := p.img.Pix
+
+	array := make([]byte, 4*(x2-x1+1))
+	for i := 0; i < len(array); i += 4 {
+		copy(array[i:], color[:])
+	}
+
+	x1 = 4 * x1
+
 	for y := y1; y <= y2; y++ {
-		for x := x1; x <= x2; x++ {
-			p.DrawPix(x, y, color)
-		}
+		pos := p.img.Stride*y + x1
+		copy(pix[pos:], array)
 	}
 }

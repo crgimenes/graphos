@@ -32,6 +32,8 @@ func update(i *graphos.Instance) error {
 	i.DrawVideoTextMode()
 
 	i.Input()
+
+	i.UpdateScreen = true
 	return nil
 }
 

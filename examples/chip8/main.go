@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"runtime/pprof"
 	"time"
 
 	"crg.eti.br/go/graphos"
@@ -161,10 +163,17 @@ func input(i *graphos.Instance) {
 	}
 }
 
+var (
+	firstRun = true
+	black    = graphos.Colors16[0]
+	white    = graphos.Colors16[0xF]
+)
+
 func update(i *graphos.Instance) error {
-	black := graphos.Colors16[0]
-	white := graphos.Colors16[0xF]
-	i.DrawFilledBox(0, 0, i.Width-1, i.Height-1, black)
+	if firstRun {
+		i.DrawFilledBox(0, 0, i.Width-1, i.Height-1, black)
+		firstRun = false
+	}
 	i.CurrentColor = white
 
 	//i.Input()
@@ -217,11 +226,29 @@ func update(i *graphos.Instance) error {
 
 	//c8.Cycle()
 
+	i.UpdateScreen = true
+
 	return nil
 }
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
+	//////////////////////////////////////
+	f, err := os.Create("chip8.prof")
+	if err != nil {
+
+		fmt.Println(err)
+		return
+
+	}
+	pprof.StartCPUProfile(f)
+	//pprof.WriteHeapProfile(f)
+	defer func() {
+		pprof.StopCPUProfile()
+		f.Close()
+	}()
+	//////////////////////////////////////
 
 	cg.Width = 800
 	cg.Height = 600

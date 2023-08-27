@@ -34,6 +34,7 @@ func update(screen *graphos.Instance) error {
 	screen.CurrentColor = graphos.Colors16[0x0F]
 	screen.DrawPix(walker.X, walker.Y, screen.CurrentColor)
 
+	screen.UpdateScreen = true
 	return nil
 }
 
