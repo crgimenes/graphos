@@ -2,7 +2,6 @@ package main
 
 import (
 	"math/rand"
-	"time"
 
 	"crg.eti.br/go/graphos"
 )
@@ -43,7 +42,6 @@ func random(min, max int) int {
 }
 
 func main() {
-	rand.Seed(time.Now().Unix())
 
 	cg := graphos.New()
 	cg.Width = 800
